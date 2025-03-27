@@ -3,61 +3,250 @@
 
 <head>
     <title>Calendar Application</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: sans-serif;
+            background-color: #f1f3f4;
+        }
+
+        .layout {
+            display: flex;
+            height: 100vh;
+            margin: 0 20px;
+        }
+
+        .side-bar {
+            width: 256px;
+            padding: 20px;
+        }
+
+        .main-calendar {
+            flex: 1 1 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: rgba(17, 17, 26, 0.05) 0px 4px 16px, rgba(17, 17, 26, 0.05) 0px 8px 32px;
+            width: 90%;
+            height: 1440px;
+            margin-top: 20px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .main-calendar h1 {
+            text-align: center;
+        }
+
+        #date-selector-form .form-group {
+            display: flex;
+            flex-direction: column;
+            padding: 7.5px;
+        }
+
+        #date-selector-form button {
+            padding: 5px;
+        }
+
+        label {
+            text-align: left;
+            padding: 5px 0;
+        }
+
+        #create-form {
+            margin-top: 20px;
+        }
+
+        #date-selector-form,
+        #create-form {
+            transition: opacity 0.3s ease, max-height 0.3s ease;
+            overflow: hidden;
+        }
+
+        .hidden {
+            opacity: 0;
+            max-height: 0;
+            pointer-events: none;
+        }
+
+        .visible {
+            opacity: 1;
+        }
+
+        button {
+            background-color: #1a73e8;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+        }
+
+        button#create-toggle {
+            display: block;
+            width: 100%;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        .calendar-container {
+            display: flex;
+            width: 100%;
+            margin: 20px 5px;
+        }
+
+        .calendar-times {
+            width: 60px;
+            padding-right: 10px;
+            text-align: right;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .calendar-times div {
+            height: 60px;
+        }
+
+        .calendar-day {
+            flex: 1;
+            position: relative;
+            border-left: 1px solid #ccc;
+        }
+
+        .appointment {
+            position: absolute;
+            left: 10px;
+            right: 10px;
+            background-color: #007bff;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .hour-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: #eee;
+        }
+
+        .current-time-line {
+            position: absolute;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background-color: red;
+            z-index: 2;
+        }
+
+        .appointment.private {
+            background-color: #6c757d;
+        }
+    </style>
 </head>
 
-<body style="display: flex; align-items: center; flex-direction: column;">
-    <h1>Calendar working</h1>
+<body>
+    <!-- <h1>Calendar working</h1> -->
+    <div class="layout">
+        <div class="side-bar">
+            <!-- launches the form to create new appointment -->
+            <button id="create-toggle">+ Create</button>
 
-    <!-- mini form to select the day to show appointments for -->
-    <form action="" id="date-selector-form">
-        <label for="day-select">choose a day: </label>
-        <input type="date" name="day-select" id="day-select" value="{{ '%04d-%02d-%02d' % (year, month, day) }}">
-        <button type="submit">Appointments</button>
-    </form>
+            <!-- mini form to select the day to show appointments for -->
+            <form action="" id="date-selector-form" class="visible">
+                <div class="form-group">
+                    <label for="day-select">choose a day: </label>
+                    <input type="date" name="day-select" id="day-select"
+                        value="{{ '%04d-%02d-%02d' % (year, month, day) }}">
+                </div>
+                <button type="submit">Appointments</button>
+            </form>
 
-    <table border="1" style="margin: 20px auto; box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Date</th>
-                <th>Start</th>
-                <th>End</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for row in rows %}
-            <tr>
-                <td>{{ row[1] }}</td>
-                <td>{{ row[2].strftime("%Y-%m-%d") }}</td>
-                <td>{{ row[2].strftime("%H:%M") }}</td>
-                <td>{{ row[3].strftime("%H:%M") }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="4">No appointments found.</td>
-            </tr>
-        </tbody>
-        {% endfor %}
-    </table>
-    <form action="" method="post" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; padding: 20px;">
-        {{ form.hidden_tag() }}
-        <p>{{ form.name.label }} {{ form.name() }}</p>
-        <p>{{ form.start_date.label }} {{ form.start_date() }}</p>
-        <p>{{ form.start_time.label }} {{ form.start_time() }}</p>
-        <p>
-            {{ form.end_date.label }} {{ form.end_date() }}
-            {% for error in form.end_date.errors %}
-            <span class="error" style="color:red; display: block;">{{ error }}</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.end_time.label }} {{ form.end_time() }}</p>
-        <p>{{ form.description.label }} {{ form.description() }}</p>
-        <p>{{ form.private.label }} {{ form.private() }}</p>
-        <p>{{ form.submit() }}</p>
-    </form>
+            <!-- form to create a new appointment -->
+            <form action="" method="post" id="create-form" class="hidden">
+
+                {{ form.hidden_tag() }}
+                <h3>Create an Appointment</h3>
+                <p>{{ form.name.label }} {{ form.name() }}</p>
+                <p>{{ form.start_date.label }} {{ form.start_date() }}</p>
+                <p>{{ form.start_time.label }} {{ form.start_time() }}</p>
+                <p>
+                    {{ form.end_date.label }} {{ form.end_date() }}
+                    {% for error in form.end_date.errors %}
+                    <span class="error" style="color:red; display: block;">{{ error }}</span>
+                    {% endfor %}
+                </p>
+                <p>{{ form.end_time.label }} {{ form.end_time() }}</p>
+                <p>{{ form.description.label }} {{ form.description() }}</p>
+                <p>{{ form.private.label }} {{ form.private() }}</p>
+                <p>{{ form.submit() }}</p>
+            </form>
+        </div>
+
+        <div class="main-calendar">
+            <h1>Working Calendar</h1>
+            <div class="calendar-container">
+                <div class="calendar-times">
+                    {% for hour in range(24) %}
+                    <div>{{ "%02d:00" | format(hour) }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="calendar-day">
+                    {% for h in range(24) %}
+                    <div class="hour-line" style="top: {{ h * 60 }}px;"></div>
+                    {% endfor %}
+
+                    {% if year == now.year and month == now.month and day == now.day %}
+                    {% set current_minute = now.hour * 60 + now.minute %}
+                    <div class="current-time-line" style="top: {{ current_minute }}px;"></div>
+                    {% endif %}
+
+                    {% for row in rows %}
+                    {% set start_hour = row[2].hour %}
+                    {% set start_min = row[2].minute %}
+                    {% set end_hour = row[3].hour %}
+                    {% set end_min = row[3].minute %}
+                    {% set start_offset = (start_hour * 60) + start_min %}
+                    {% set end_offset = (end_hour * 60) + end_min %}
+                    {% set height = end_offset - start_offset %}
+                    <div class="appointment {% if row[5] %} private {% endif %}}"
+                        style="top: {{ start_offset }}px; height: {{ height }}px;">
+                        <strong>{{ row[1] }}</strong> <br>
+                        {{ row[2].strftime("%H:%M") }} - {{ row[3].strftime("%H:%M") }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- script to handle form to filter appointments -->
-     <script>
+    <script>
+        // handle showing / hiding create form
+        document.getElementById('create-toggle').addEventListener('click', () => {
+            const createForm = document.getElementById('create-form');
+            const selectDateForm = document.getElementById('date-selector-form');
+
+            const isHidden = createForm.classList.contains("hidden");
+
+            // toggle to hide select date form when create form is shown
+            if (isHidden) {
+                createForm.classList.remove('hidden');
+                createForm.classList.add('visible');
+                selectDateForm.classList.remove('visible');
+                selectDateForm.classList.add('hidden');
+            } else {
+                createForm.classList.add('hidden');
+                createForm.classList.remove('visible');
+                selectDateForm.classList.add('visible');
+                selectDateForm.classList.remove('hidden');
+            }
+        });
+
+        // handle form to select dates
         document.getElementById('date-selector-form').addEventListener('submit', (event) => {
             event.preventDefault()
 
@@ -72,7 +261,7 @@
             window.location.href = `/${parseInt(year)}/${parseInt(month)}/${parseInt(day)}`;
 
         });
-     </script>
+    </script>
 </body>
 
 </html>

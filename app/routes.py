@@ -46,13 +46,14 @@ def daily(year, month, day):
 
     selected_day = datetime(year, month, day)
     next_day = selected_day + timedelta(days=1)
+    prev_day = selected_day - timedelta(days=1)
 
 
     # establish database connection
     with psycopg2.connect(**CONNECTION_PARAMETERS) as conn:
         with conn.cursor() as curs:
             curs.execute("""
-                SELECT id, name, start_datetime, end_datetime
+                SELECT id, name, start_datetime, end_datetime, private
                 FROM appointments
                 WHERE start_datetime BETWEEN %(selected_day)s AND %(next_day)s
                 ORDER BY start_datetime;
@@ -64,7 +65,21 @@ def daily(year, month, day):
             )
             rows = curs.fetchall()
 
-            return render_template('main.html', rows=rows, form=form, year=year, month=month, day=day)
+            return render_template(
+                'main.html',
+                rows=rows,
+                form=form,
+                year=year,
+                month=month,
+                day=day,
+                now=datetime.now(),
+                prev_year=prev_day.year,
+                prev_month=prev_day.month,
+                prev_day=prev_day.day,
+                next_year=next_day.year,
+                next_month=next_day.month,
+                next_day=next_day.day
+                )
 
 
 # display main page
