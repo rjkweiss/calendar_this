@@ -64,7 +64,7 @@ def daily(year, month, day):
             )
             rows = curs.fetchall()
 
-            return render_template('main.html', rows=rows, form=form)
+            return render_template('main.html', rows=rows, form=form, year=year, month=month, day=day)
 
 
 # display main page

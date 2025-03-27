@@ -5,28 +5,17 @@
     <title>Calendar Application</title>
 </head>
 
-<body>
+<body style="display: flex; align-items: center; flex-direction: column;">
     <h1>Calendar working</h1>
 
-    <form action="" method="post">
-        {{ form.hidden_tag() }}
-        <p>{{ form.name.label }} {{ form.name() }}</p>
-        <p>{{ form.start_date.label }} {{ form.start_date() }}</p>
-        <p>{{ form.start_time.label }} {{ form.start_time() }}</p>
-        <p>
-            {{ form.end_date.label }} {{ form.end_date() }}
-            {% for error in form.end_date.errors %}
-                <span class="error" style="color:red; display: block;">{{ error }}</span>
-            {% endfor %}
-        </p>
-        <p>{{ form.end_time.label }} {{ form.end_time() }}</p>
-        <p>{{ form.description.label }} {{ form.description() }}</p>
-        <p>{{ form.private.label }} {{ form.private() }}</p>
-        <p>{{ form.submit() }}</p>
+    <!-- mini form to select the day to show appointments for -->
+    <form action="" id="date-selector-form">
+        <label for="day-select">choose a day: </label>
+        <input type="date" name="day-select" id="day-select" value="{{ '%04d-%02d-%02d' % (year, month, day) }}">
+        <button type="submit">Appointments</button>
     </form>
 
-
-    <table border="1">
+    <table border="1" style="margin: 20px auto; box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;">
         <thead>
             <tr>
                 <th>Name</th>
@@ -50,6 +39,40 @@
         </tbody>
         {% endfor %}
     </table>
+    <form action="" method="post" style="box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px; padding: 20px;">
+        {{ form.hidden_tag() }}
+        <p>{{ form.name.label }} {{ form.name() }}</p>
+        <p>{{ form.start_date.label }} {{ form.start_date() }}</p>
+        <p>{{ form.start_time.label }} {{ form.start_time() }}</p>
+        <p>
+            {{ form.end_date.label }} {{ form.end_date() }}
+            {% for error in form.end_date.errors %}
+            <span class="error" style="color:red; display: block;">{{ error }}</span>
+            {% endfor %}
+        </p>
+        <p>{{ form.end_time.label }} {{ form.end_time() }}</p>
+        <p>{{ form.description.label }} {{ form.description() }}</p>
+        <p>{{ form.private.label }} {{ form.private() }}</p>
+        <p>{{ form.submit() }}</p>
+    </form>
+
+    <!-- script to handle form to filter appointments -->
+     <script>
+        document.getElementById('date-selector-form').addEventListener('submit', (event) => {
+            event.preventDefault()
+
+            const dateInput = document.getElementById('day-select').value;
+
+            if (!dateInput) return;
+
+            // parse the date YYYY-MM-DD
+            const [year, month, day] = dateInput.split("-");
+
+            // redirect to /year/month/day
+            window.location.href = `/${parseInt(year)}/${parseInt(month)}/${parseInt(day)}`;
+
+        });
+     </script>
 </body>
 
 </html>
