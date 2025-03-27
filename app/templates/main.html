@@ -13,7 +13,12 @@
         <p>{{ form.name.label }} {{ form.name() }}</p>
         <p>{{ form.start_date.label }} {{ form.start_date() }}</p>
         <p>{{ form.start_time.label }} {{ form.start_time() }}</p>
-        <p>{{ form.end_date.label }} {{ form.end_date() }}</p>
+        <p>
+            {{ form.end_date.label }} {{ form.end_date() }}
+            {% for error in form.end_date.errors %}
+                <span class="error" style="color:red; display: block;">{{ error }}</span>
+            {% endfor %}
+        </p>
         <p>{{ form.end_time.label }} {{ form.end_time() }}</p>
         <p>{{ form.description.label }} {{ form.description() }}</p>
         <p>{{ form.private.label }} {{ form.private() }}</p>
