@@ -5,5 +5,29 @@
     </head>
     <body>
         <h1>Calendar working</h1>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Date</th>
+                    <th>Start</th>
+                    <th>End</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in rows %}
+                <tr>
+                    <td>{{ row[1] }}</td>
+                    <td>{{  row[2].strftime("%Y-%m-%d") }}</td>
+                    <td>{{ row[2].strftime("%H:%M") }}</td>
+                    <td>{{ row[3].strftime("%H:%M") }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4">No appointments found.</td>
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
     </body>
 </html>
