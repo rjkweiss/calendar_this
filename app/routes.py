@@ -53,7 +53,7 @@ def daily(year, month, day):
     with psycopg2.connect(**CONNECTION_PARAMETERS) as conn:
         with conn.cursor() as curs:
             curs.execute("""
-                SELECT id, name, start_datetime, end_datetime, private
+                SELECT id, name, start_datetime, end_datetime, description, private
                 FROM appointments
                 WHERE start_datetime BETWEEN %(selected_day)s AND %(next_day)s
                 ORDER BY start_datetime;
@@ -87,3 +87,31 @@ def daily(year, month, day):
 def main():
     curr_date = datetime.now()
     return redirect(url_for(".daily", year=curr_date.year, month=curr_date.month, day=curr_date.day))
+
+# edit an appointment
+@bp.route("/<int:id>")
+def editAppointment(id):
+    with psycopg2.connect(**CONNECTION_PARAMETERS) as conn:
+        with conn.cursor() as curs:
+            curs.execute("""
+                UPDATE appointments
+                SET
+                """,
+                {
+                    'id': id
+                }
+            )
+
+# delete an appointment
+@bp.route("/<int:id>")
+def deleteAppointment(id):
+    with psycopg2.connect(**CONNECTION_PARAMETERS) as conn:
+        with conn.cursor() as curs:
+            curs.execute("""
+                DELETE FROM appointments
+                WHERE id = %(id)s
+                """,
+                {
+                    'id': id
+                }
+            )

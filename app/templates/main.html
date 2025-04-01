@@ -3,6 +3,8 @@
 
 <head>
     <title>Calendar Application</title>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"> -->
+    <script src="https://unpkg.com/feather-icons"></script>
     <style>
         body {
             margin: 0;
@@ -144,6 +146,98 @@
         .appointment.private {
             background-color: #6c757d;
         }
+
+        /* modal styling */
+        .modal {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            height: 100vh;
+            width: 100vw;
+            z-index: 9999;
+            background-color: rgba(0, 0, 0, 0.4);
+            /* display: flex;
+            align-items: center;
+            justify-content: center; */
+            display: block;
+            /* overflow-y: auto; */
+        }
+
+        .styled-modal {
+            border-radius: 16px;
+            padding: 20px;
+            background: #fefefe;
+            width: 400px;
+            max-width: 90%;
+            font-family: sans-serif;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            display: block;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+            display: inline-block;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .modal-actions .icon-btn {
+            background: none;
+            color: inherit;
+            border: none;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            margin-top: 16px;
+            font-size: 14px;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal-content {
+            background: #fefefe;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+            padding: 20px;
+            border-radius: 10px;
+            width: 400px;
+            max-width: 90vw;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            /* top: 0;
+            bottom: 0; */
+            border: 1px solid red;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        button.danger {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            margin-top: 10px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -213,6 +307,12 @@
                     {% set end_offset = (end_hour * 60) + end_min %}
                     {% set height = end_offset - start_offset %}
                     <div class="appointment {% if row[5] %} private {% endif %}}"
+                        data-id="{{ row[0] }}"
+                        data-name="{{ row[1] }}"
+                        data-start="{{ row[2].strftime('%H:%M') }}"
+                        data-end="{{ row[3].strftime('%H:%M') }}"
+                        data-description="{{ row[4] }}"
+                        data-start-offset="{{ (row[2].hour * 60) + row[2].minute }}"
                         style="top: {{ start_offset }}px; height: {{ height }}px;">
                         <strong>{{ row[1] }}</strong> <br>
                         {{ row[2].strftime("%H:%M") }} - {{ row[3].strftime("%H:%M") }}
@@ -220,6 +320,52 @@
                     {% endfor %}
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- appointment modal -->
+    <div id="appointment-modal" class="modal hidden">
+        <div class="modal-content styled-model">
+            <div class="modal-header">
+                <div class="modal-actions">
+                    <button id="modal-edit-btn" class="icon-btn" title="Edit">
+                        <i data-feather="edit-2"></i>
+                    </button>
+                    <form id="delete-form" method="post" style="display: inline;">
+                        <button class="icon-btn" title="Delete">
+                            <i data-feather="trash-2"></i>
+                        </button>
+                    </form>
+                    <!-- to add later -- email button and more  -->
+                    <button class="icon-btn" id="modal-close" title="Close">
+                        <i data-feather="x"></i>
+                    </button>
+                </div>
+                <div>
+                    <div class="color-dot"></div>
+                    <h2 id="modal-title"></h2>
+                </div>
+            </div>
+
+            <div class="modal-body">
+                <p><strong>Time: </strong><span id="modal-time"></span></p>
+                <p><strong>Description:</strong> <span id="modal-description"></span></p>
+
+                <!-- to do later -- add recurring type, user icon, time to nofify before appointment  -->
+            </div>
+
+            <!-- edit form -->
+            <form id="modal-edit-form" method="post" class="hidden">
+                {{ form.hidden_tag() }}
+                <p>{{ form.name.label }} {{ form.name() }}</p>
+                <p>{{ form.start_date.label }} {{ form.start_date() }}</p>
+                <p>{{ form.start_time.label }} {{ form.start_time() }}</p>
+                <p>{{ form.end_date.label }} {{ form.end_date() }}</p>
+                <p>{{ form.end_time.label }} {{ form.end_time() }}</p>
+                <p>{{ form.description.label }} {{ form.description() }}</p>
+                <p>{{ form.private.label }} {{ form.private() }}</p>
+                <p><button type="submit">Save Changes</button></p>
+            </form>
         </div>
     </div>
 
@@ -261,6 +407,54 @@
             window.location.href = `/${parseInt(year)}/${parseInt(month)}/${parseInt(day)}`;
 
         });
+
+        // handle modal -- edits /deletes appointments
+        document.querySelectorAll('.appointment').forEach((element) => {
+            element.addEventListener('click', () => {
+                const modal = document.getElementById('appointment-modal');
+                const modalContent = modal.querySelector('.modal-content');
+
+                // Position modal above or near the appointment
+                const startOffset = element.dataset.startOffset;
+                const calendarTopOffSet = 0; // calendar starts at the top
+                const slotHeight = 1; // assuming 1minute is 1px
+
+                const topPosition = calendarTopOffSet + (startOffset * slotHeight);
+
+                modalContent.style.top = `${topPosition}px`;
+                // modalContent.style.left = `${rect.left}px`;
+
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // disable scroll
+
+                const id = element.dataset.id;
+                const title = element.dataset.name;
+                const time = `${element.dataset.start} - ${element.dataset.end}`;
+                const description = element.dataset.description;
+
+                // fill in the modal
+                document.getElementById('modal-title').textContent = title;
+                document.getElementById('modal-time').textContent = time;
+                document.getElementById('modal-description').textContent = description;
+                document.getElementById('delete-form').action = `/appointments/${id}/delete`;
+                document.getElementById('modal-edit-form').action = `/appointments/${id}/edit`;
+
+                // modal.classList.remove('hidden');
+            });
+        });
+
+        document.getElementById('modal-close').addEventListener('click', () => {
+            document.getElementById('appointment-modal').classList.add('hidden');
+            document.body.style.overflow = ''; // re-enable scroll
+        });
+
+        document.getElementById('modal-edit-btn').addEventListener('click', () => {
+            document.getElementById('modal-view-mode').classList.add('hidden');
+            document.getElementById('modal-edit-form').classList.remove('hidden');
+        });
+    </script>
+    <script>
+        feather.replace();
     </script>
 </body>
 
